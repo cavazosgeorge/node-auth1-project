@@ -15,18 +15,28 @@ const cors = require("cors");
   or you can use a session store like `connect-session-knex`.
  */
 
+const userRouter = require("./users/users-router");
+
 const server = express();
 
 server.use(helmet());
 server.use(express.json());
 server.use(cors());
 
+server.use("/api/users", userRouter);
+
 server.get("/", (req, res) => {
-  res.json({ api: "up" });
+  res.json({
+    sucess: true,
+    api: "up",
+  });
 });
 
-server.use((err, req, res, next) => { // eslint-disable-line
+// eslint-disable-next-line
+server.use((err, req, res, next) => {
+  // eslint-disable-line
   res.status(err.status || 500).json({
+    success: false,
     message: err.message,
     stack: err.stack,
   });
