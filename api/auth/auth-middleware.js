@@ -53,7 +53,24 @@ async function checkUsernameFree(req, res, next) {
     "message": "Invalid credentials"
   }
 */
-function checkUsernameExists() {}
+async function checkUsernameExists(req, res, next) {
+  try {
+    const { username } = req.body;
+    const existingUsername = await Users.findBy({ username }).first();
+
+    if (!existingUsername) {
+      next({
+        success: false,
+        status: 401,
+        message: "Invalid credentials",
+      });
+    } else {
+      next();
+    }
+  } catch (err) {
+    next(err);
+  }
+}
 
 /*
   If password is missing from req.body, or if it's 3 chars or shorter
@@ -67,4 +84,4 @@ function checkPasswordLength() {}
 
 // Don't forget to add these to the `exports` object so they can be required in other modules
 
-module.exports = { restricted, checkUsernameFree };
+module.exports = { restricted, checkUsernameFree, checkUsernameExists };
