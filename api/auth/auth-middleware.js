@@ -90,7 +90,7 @@ function checkPasswordLength(req, res, next) {
     next({
       sucess: false,
       status: 422,
-      message: "Password must be longer than c chars",
+      message: "Password must be longer than 3 chars",
     });
   } else {
     next();
