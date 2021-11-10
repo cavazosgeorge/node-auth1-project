@@ -2,7 +2,11 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const User = require("../users/users-model");
 
-const { checkUsernameFree, checkPasswordLength, checkUsernameExists } = require("./auth-middleware");
+const {
+  checkUsernameFree,
+  checkPasswordLength,
+  checkUsernameExists,
+} = require("./auth-middleware");
 
 // Require `checkUsernameFree`, `checkUsernameExists` and `checkPasswordLength`
 // middleware functions from `auth-middleware.js`. You will need them here!
@@ -30,20 +34,25 @@ const { checkUsernameFree, checkPasswordLength, checkUsernameExists } = require(
   }
  */
 
-router.post('/register', checkUsernameFree, checkPasswordLength, async(req, res, next) => {
-  try {
-    const { username, password } = req.body
+router.post(
+  "/register",
+  checkUsernameFree,
+  checkPasswordLength,
+  async (req, res, next) => {
+    try {
+      const { username, password } = req.body;
 
-    const hash = bcrypt.hashSync(password, 6)
-    const newUser = { username, password: hash }
-    
-    const user = await User.add(newUser)
+      const hash = bcrypt.hashSync(password, 6);
+      const newUser = { username, password: hash };
 
-    res.status(200).json(user)
-  } catch (err) {
-    next(err)
+      const user = await User.add(newUser);
+
+      res.status(200).json(user);
+    } catch (err) {
+      next(err);
+    }
   }
-})
+);
 
 /**
   2 [POST] /api/auth/login { "username": "sue", "password": "1234" }
@@ -60,29 +69,29 @@ router.post('/register', checkUsernameFree, checkPasswordLength, async(req, res,
     "message": "Invalid credentials"
   }
  */
-router.post('/login', checkUsernameExists, async (req, res, next) => {
+router.post("/login", checkUsernameExists, async (req, res, next) => {
   try {
-    const { username, password} = req.body
-    const user = await User.findBy({ username }).first()
+    const { username, password } = req.body;
+    const user = await User.findBy({ username }).first();
 
     if (user && bcrypt.compareSync(password, user.password)) {
-      req.session.user = user
+      req.session.user = user;
       res.json({
-        sucess : true,
-        status : 200,
-        message : `Welcome ${user.username}`
-      })
+        sucess: true,
+        status: 200,
+        message: `Welcome ${user.username}`,
+      });
     } else {
       next({
-        success : false,
-        status : 401,
-        message : 'Invalid credentials'
-      })
+        success: false,
+        status: 401,
+        message: "Invalid credentials",
+      });
     }
   } catch (err) {
-    next(err)
+    next(err);
   }
-})
+});
 
 /**
   3 [GET] /api/auth/logout
@@ -99,6 +108,26 @@ router.post('/login', checkUsernameExists, async (req, res, next) => {
     "message": "no session"
   }
  */
+
+  // eslint-disable-next-line
+router.get('/logout', async (req, res, next) => {
+  if (!req.session.user) {
+    return res.json({
+      success : false,
+      status : 200,
+      message : 'no session'
+    })
+  } else {
+    req.session.destroy(() => {
+      res.json({
+        success : true,
+        status : 200,
+        message : 'logged out'
+      })
+    })
+  }
+})
+
 
 // Don't forget to add the router to the `exports` object so it can be required in other modules
 module.exports = router;
